@@ -51,11 +51,9 @@
     <li><a href="#configurable-parameters">Configurable Parameters</a></li>
     <li><a href="#training-the-model">Training The Model</a></li>
     <li><a href="#tests">Tests</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -233,23 +231,6 @@ Each analysis is stored under `outputs/<analysis_id>/`: `original.png`,
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- ROADMAP -->
-## Roadmap
-
-- [x] Local pixel-level land-cover segmentation
-- [x] Plantable-area detection with obstacle buffers
-- [x] Deterministic Poisson-disk tree placement
-- [x] Heat score / temperature before-after projections
-- [x] PDF report export
-- [ ] Training data from real labeled imagery, not just synthetic scenes
-- [ ] Placement strategy that prioritizes maximum cooling impact over even coverage
-- [ ] Batch analysis across multiple images / a whole district
-
-See the [open issues](https://github.com/UdhayaKarthikeyanN/canopy-ai/issues) for a
-full list of proposed features and known issues.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <!-- CONTRIBUTING -->
 ## Contributing
 
@@ -280,19 +261,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 Udhaya Karthikeyan — [github.com/UdhayaKarthikeyanN](https://github.com/UdhayaKarthikeyanN)
 
 Project Link: [https://github.com/UdhayaKarthikeyanN/canopy-ai](https://github.com/UdhayaKarthikeyanN/canopy-ai)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-* [Best-README-Template](https://github.com/othneildrew/Best-README-Template) — this
-  README's structure is adapted from it
-* [Img Shields](https://shields.io)
-* [Choose an Open Source License](https://choosealicense.com)
-* [OpenCV](https://opencv.org), [scikit-learn](https://scikit-learn.org),
-  [ReportLab](https://www.reportlab.com/opensource/) — the local CV/ML/PDF stack this
-  project is built on
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
