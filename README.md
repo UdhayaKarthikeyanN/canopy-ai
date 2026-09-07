@@ -12,6 +12,13 @@ entirely on synthetic labeled scenes - see [Training the model](#training-the-mo
 followed by classical computer-vision post-processing. Everything runs on your CPU.
 Results are deterministic and reproducible (fixed random seed for tree placement).
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Landing page](docs/screenshots/landing.png) | ![Overview dashboard](docs/screenshots/overview.png) |
+| ![Analysis maps](docs/screenshots/analysis-maps.png) | ![Before/after comparison](docs/screenshots/before-after.png) |
+
 ## Quick start
 
 ### One-click launch (Windows)
