@@ -1,0 +1,7 @@
+flask>=3.0
+numpy>=1.26
+opencv-python>=4.9
+pillow>=10.0
+reportlab>=4.0
+scikit-learn>=1.4
+joblib>=1.3

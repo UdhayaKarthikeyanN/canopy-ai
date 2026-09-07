@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Generated analysis outputs
+outputs/*
+!outputs/.gitkeep
+
+# Test artifacts
+tests/out/
+tests/test_satellite.jpg
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

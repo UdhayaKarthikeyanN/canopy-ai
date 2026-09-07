@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canopy AI - Urban Tree & Heat Analysis</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232f9d6a'%3E%3Cpath d='M12 2 7 9h2.5L6 15h3v2H9v3h6v-3h-1v-2h3l-3.5-6H16z'/%3E%3C/svg%3E">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" aria-hidden="true">
+      <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 7 9h2.5L6 15h3v2H9v3h6v-3h-1v-2h3l-3.5-6H16z"/></svg>
+    </div>
+    <div>
+      <h1>Canopy AI</h1>
+      <p>Local AI Urban Tree &amp; Heat Analysis &middot; No cloud &middot; No external APIs</p>
+    </div>
+  </div>
+  <div class="badge-offline" title="All inference runs locally on this machine">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+    </svg>
+    100% Local Inference
+  </div>
+</header>
+
+<main>
+  <section class="panel" id="uploadPanel">
+    <div class="panel-head">
+      <h2>Satellite / Aerial Image Analysis</h2>
+      <p>Upload a JPG or PNG satellite or aerial image. All pixel-level segmentation, planting
+      recommendations, heat metrics and the PDF report are computed locally.</p>
+    </div>
+
+    <div id="dropzone" class="dropzone" tabindex="0">
+      <input type="file" id="fileInput" accept=".jpg,.jpeg,.png" hidden>
+      <div class="dz-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+        </svg>
+      </div>
+      <div class="dz-text"><strong>Click or drag &amp; drop</strong> your image here<br>
+      <span>JPG or PNG &middot; up to 48 MB</span></div>
+      <div id="fileTag" class="file-tag" hidden></div>
+    </div>
+
+    <details class="advanced">
+      <summary>Advanced parameters (calibration)</summary>
+      <div class="adv-grid">
+        <label>Baseline temperature (&deg;C)
+          <input type="number" id="baseTemp" value="33" min="10" max="55" step="0.5">
+        </label>
+        <label>Ground resolution (m/pixel)
+          <select id="gsd">
+            <option value="0.1">0.1 (very high res)</option>
+            <option value="0.25">0.25 (high res)</option>
+            <option value="0.5" selected>0.5 (typical satellite)</option>
+            <option value="1.0">1.0</option>
+            <option value="2.0">2.0</option>
+          </select>
+        </label>
+        <label>Tree spacing (m)
+          <input type="number" id="spacing" value="7" min="3" max="30" step="0.5">
+        </label>
+        <label>Mature crown radius (m)
+          <input type="number" id="crownR" value="3.5" min="1" max="8" step="0.5">
+        </label>
+      </div>
+    </details>
+
+    <button id="analyzeBtn" class="btn primary big" disabled>Analyze Image</button>
+    <div id="errorBox" class="error-box" hidden></div>
+  </section>
+
+  <section id="loader" hidden>
+    <div class="spinner"></div>
+    <p id="loadMsg">Running local segmentation engine&hellip;</p>
+  </section>
+
+  <section id="dashboard" hidden>
+    <nav class="tabs">
+      <button class="tab active" data-tab="maps">Analysis Maps</button>
+      <button class="tab" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="beforeafter">Before / After</button>
+      <button class="tab" data-tab="methodology">Methodology</button>
+    </nav>
+
+    <div id="tab-maps" class="tabpage">
+      <div class="map-grid" id="mapGrid"></div>
+    </div>
+
+    <div id="tab-overview" class="tabpage" hidden>
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <div class="row2">
+        <div class="card">
+          <h3>Land-Cover Composition</h3>
+          <div id="compositionBars"></div>
+          <div class="legend" id="legendBox"></div>
+        </div>
+        <div class="card">
+          <h3>Impact Summary</h3>
+          <ul class="impact-list" id="impactList"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-beforeafter" class="tabpage" hidden>
+      <div class="card">
+        <h3>Heat Score (0-100, lower is better)</h3>
+        <div class="ba-group" id="baHeat"></div>
+      </div>
+      <div class="card">
+        <h3>Estimated Temperature</h3>
+        <div class="ba-group" id="baTemp"></div>
+      </div>
+      <div class="card">
+        <h3>Canopy Cover</h3>
+        <div class="ba-group" id="baCanopy"></div>
+      </div>
+      <div class="delta-grid" id="deltaGrid"></div>
+    </div>
+
+    <div id="tab-methodology" class="tabpage" hidden>
+      <div class="card methodology">
+        <h3>How Canopy AI works (fully local)</h3>
+        <p><b>1. Segmentation.</b> Every pixel is scored with spectral indices (ExG = 2G-R-B,
+        HSV hue/saturation/value, RGB, VARI) plus an 11x11 local texture statistic. A small
+        Random Forest classifier, trained locally on synthetic labeled scenes (no cloud, no
+        external data), assigns trees, grass, buildings, roads/paved, water and bare soil from
+        those features. A majority filter removes salt-and-pepper noise; connected-component analysis deletes
+        regions smaller than 0.02% of the scene. Masks keep the original resolution and align
+        exactly with input pixels.</p>
+        <p><b>2. Plantable mask.</b> Grass + bare-soil pixels minus a 1 m safety buffer around
+        trees, buildings, roads and water. Fragments below 0.04% of the image are discarded as noise.</p>
+        <p><b>3. Tree placement.</b> Deterministic Bridson Poisson-disk sampling inside the eroded
+        plantable mask enforces strict minimum spacing, so markers never overlap trees, buildings
+        or roads.</p>
+        <p><b>4. Metrics.</b> Percentages come from actual pixel counts at the stated ground
+        resolution. Heat score = clamp(18 + 0.90&middot;impervious% + 0.40&middot;bare% -
+        0.70&middot;canopy% - 0.20&middot;grass%, 0-100). Temperature = baseline &minus;
+        0.06&deg;C per canopy % point (literature range 0.04-0.10).</p>
+      </div>
+    </div>
+
+    <div class="report-bar">
+      <button id="pdfBtn" class="btn pdf">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
+        </svg>
+        Generate Report (PDF)
+      </button>
+      <button id="resetBtn" class="btn ghost">Analyze Another Image</button>
+    </div>
+  </section>
+</main>
+
+<footer>Canopy AI &mdash; deterministic local computer-vision engine &middot; reproducible results &middot; no internet required for inference</footer>
+
+<div id="lightbox" class="lightbox" hidden>
+  <button id="lightboxClose" class="lightbox-close" aria-label="Close full-screen preview">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M18 6 6 18"/><path d="M6 6l12 12"/>
+    </svg>
+  </button>
+  <img id="lightboxImg" src="" alt="">
+  <div id="lightboxCaption" class="lightbox-caption"></div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
